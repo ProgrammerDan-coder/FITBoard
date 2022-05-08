@@ -29,12 +29,26 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
+import java.sql.BatchUpdateException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.POST;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -52,6 +66,16 @@ public class MainActivity extends AppCompatActivity
 
     RelativeLayout root;
 
+//
+//    private Gson gson = new GsonBuilder().create();
+//    private Retrofit retrofit = new Retrofit.Builder()
+//            .addConverterFactory(GsonConverterFactory.create(gson))
+//            .baseUrl(BASE_URL)
+//            .build();
+
+
+
+
     DBHelper dbHelper;
     SQLiteDatabase db;
     @Override
@@ -62,9 +86,12 @@ public class MainActivity extends AppCompatActivity
         btnRegister = findViewById(R.id.btnRegister);
         root = findViewById(R.id.root_element);
 
+
         users = new ArrayList<>(); // JSON
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, users); // JSON
+
+
 
         //dbHelper = new DBHelper(this);
         dbHelper = new DBHelper(getApplicationContext());
@@ -73,7 +100,13 @@ public class MainActivity extends AppCompatActivity
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showRegisterWindow();
+                try {
+                    showRegisterWindow();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
             }
         });
 
@@ -86,6 +119,7 @@ public class MainActivity extends AppCompatActivity
 
         
     }
+
 
 
     public void OnCLick(View view){
@@ -151,7 +185,7 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 //bcrypt
-                String bcryptPassword = BCrypt.withDefaults().hashToString(15, pass_string.toCharArray());
+                String bcryptPassword = BCrypt.withDefaults().hashToString(5, pass_string.toCharArray());
 
                 //endBcrypt
                 Log.d("WTF", "id: " + id_string + "\npass: " + bcryptPassword );
@@ -180,18 +214,19 @@ public class MainActivity extends AppCompatActivity
                 BCrypt.Result result = BCrypt.verifyer().verify(pass_string.toCharArray(), hashPass); //BCRYPT
                 Log.d("BCRYPT", "RESULT = " + result.verified);//
                 Log.d("BCRYPT", "hash = " + result.verified);//
-                if(result.verified)
-                {
-                    Log.d("Intent", "name_user = " + name_user);
-                    Intent intent = new Intent(MainActivity.this, UserActivity.class);
-                    intent.putExtra("name", name_user);
-                    startActivity(intent);
-                    finish();
-                }
-                else{
-                    Snackbar.make(root, "Не корректные данные", Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
+                loginForLogin(id_int, pass_string, name_user);
+//                if(result.verified)
+//                {
+//                    Log.d("Intent", "name_user = " + name_user);
+//                    Intent intent = new Intent(MainActivity.this, UserActivity.class);
+//                    intent.putExtra("name", name_user);
+//                    startActivity(intent);
+//                    finish();
+//                }
+//                else{
+//                    Snackbar.make(root, "Не корректные данные", Snackbar.LENGTH_SHORT).show();
+//                    return;
+//                }
 
 
 
@@ -203,7 +238,9 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void showRegisterWindow() {
+    private void showRegisterWindow() throws ClassNotFoundException, SQLException {
+        //////////////////////
+
 
         ContentValues contentValues = new ContentValues(); // для добавления
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -256,7 +293,7 @@ public class MainActivity extends AppCompatActivity
                 Cursor cursor = db.rawQuery("select " + KEY_ID +  " from " +
                         TABLE_CONTACTS +" where _id = ? ", new String[]{id_string});
                 if(cursor.getCount() != 0){
-                    Snackbar.make(root, "Такой номер студента уже есть в базе", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(root, "User with id" + id_int +" already exist", Snackbar.LENGTH_SHORT).show();
                     return;
                 }
                 Log.d("WTf", "save_method");
@@ -267,7 +304,7 @@ public class MainActivity extends AppCompatActivity
 
                // db.insert(id_string, name_string, pass.getText().toString());
                 //bcrypt
-                    String bcryptPassword = BCrypt.withDefaults().hashToString(15, pass_string.toCharArray());
+                    String bcryptPassword = BCrypt.withDefaults().hashToString(5, pass_string.toCharArray());
                 //
 
 
@@ -278,6 +315,9 @@ public class MainActivity extends AppCompatActivity
                 contentValues.put(DBHelper.KEY_PASS, bcryptPassword); // pass.getText().toString()
                 contentValues.put(DBHelper.KEY_NAME, name.getText().toString());
                 db.insert(TABLE_CONTACTS,null, contentValues);
+                login(id_int, pass_string, name_string);
+
+
 
 
 //                contentValues.put(KEY_ID, id_int);
@@ -290,15 +330,21 @@ public class MainActivity extends AppCompatActivity
 //                Log.d(LOG_TAG, "insert, result Uri : " + uri.toString());
 
 
-                 //ContentProvider
+                 //Potock
 
-
-
-//                Uri uri = getContentResolver().insert(MyContentProvider.CONTENT_URI, contentValues1);
-                //Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_LONG).show();
-
-
-
+//                    //retrofitClient.getServies().createUser(id_int, name.getText().toString() ,bcryptPassword).enqueue(new Callback<IRetrofit>() {
+//                        @Override
+//                        public void onResponse(Call<IRetrofit> call, Response<IRetrofit> response) {
+//                            Log.d("RETROFIT", "RETROFIT IS GOOD" );
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Call<IRetrofit> call, Throwable t) {
+//                            Log.d("RETROFIT", "FAIL" );
+//                        }
+//                    });
+//                Thread thread = new MyThread();
+//                thread.start();
 
 
                 Snackbar.make(root,"Пользователь добавлен", Snackbar.LENGTH_SHORT).show();
@@ -309,6 +355,66 @@ public class MainActivity extends AppCompatActivity
 
         dialog.show();
     }
+
+
+    public void login(int _id, String pass, String name){
+        LoginRequest loginRequest = new LoginRequest();
+
+        loginRequest.setId(_id);
+        loginRequest.setName(name);
+        loginRequest.setPassword(pass);
+
+        Call<LoginResponse> loginResponseCall = ApiClient.getIRetrofit().userLogin(loginRequest);
+        loginResponseCall.enqueue(new Callback<LoginResponse>() {
+            @Override
+            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                if(response.isSuccessful()){
+                    Log.d("RETROFIT", "GOOD");
+                }
+                else
+                    Log.d("RETROFIT", "no good");
+            }
+
+            @Override
+            public void onFailure(Call<LoginResponse> call, Throwable t) {
+                    Log.d("RETROFIT", "ERROR");
+            }
+        });
+
+
+    }
+
+    public void loginForLogin(int _id, String pass, String name){
+        LoginResponseForLogin loginRequest = new LoginResponseForLogin();
+
+        loginRequest.setId(_id);
+        loginRequest.setPassword(pass);
+       Call<LoginResponseForLogin> loginResponseForLoginCall = ApiClient.getIRetrofit().Login(loginRequest);
+       loginResponseForLoginCall.enqueue(new Callback<LoginResponseForLogin>() {
+           @Override
+           public void onResponse(Call<LoginResponseForLogin> call, Response<LoginResponseForLogin> response) {
+               if(response.isSuccessful()){
+                   Log.d("RETROFIT", "GOOD");
+                   Log.d("Intent", "name_user = " + name);
+                   Intent intent = new Intent(MainActivity.this, UserActivity.class);
+                   intent.putExtra("name", name);
+                   startActivity(intent);
+                   finish();
+               }
+               else
+                   Log.d("RETROFIT", "no good");
+           }
+
+           @Override
+           public void onFailure(Call<LoginResponseForLogin> call, Throwable t) {
+               Log.d("RETROFIT", "ERROR");
+           }
+       });
+
+    }
+
+
+
  // JSON
 
 

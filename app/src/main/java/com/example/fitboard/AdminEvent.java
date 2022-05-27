@@ -97,6 +97,7 @@ public class AdminEvent extends AppCompatActivity {
         dialog.setPositiveButton("Удалить", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+
                 int delCount = db.delete(DBHelper.TABLE_EVENT, "_id = " + id, null);
                 Log.d("LOG_TAG", "deleted rows count = " + delCount);
                 // dialogInterface.dismiss();

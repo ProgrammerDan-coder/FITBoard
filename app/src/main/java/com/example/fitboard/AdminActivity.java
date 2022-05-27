@@ -47,6 +47,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AdminActivity extends AppCompatActivity {
 
@@ -164,6 +167,7 @@ public class AdminActivity extends AppCompatActivity {
                     Snackbar.make(relativeLayout, "Произошла ошибка, попробуйте снова", BaseTransientBottomBar.LENGTH_LONG ).show();
                 }
                 else{
+                    deleteRetrofit(Integer.parseInt(text));
                     Snackbar.make(relativeLayout, "Пользователь удален", BaseTransientBottomBar.LENGTH_LONG ).show();
                 }
 
@@ -213,7 +217,31 @@ public class AdminActivity extends AppCompatActivity {
 
     }
 
+    public void deleteRetrofit(int _id){
+        DeleteUser loginRequest = new DeleteUser();
 
+        loginRequest.setId(_id);
+
+
+        Call<DeleteUser> loginResponseCall = ApiClient.getIRetrofit().delete(loginRequest);
+        loginResponseCall.enqueue(new Callback<DeleteUser>() {
+            @Override
+            public void onResponse(Call<DeleteUser> call, Response<DeleteUser> response) {
+                if(response.isSuccessful()){
+                    Log.d("RETROFIT", "Delete");
+                }
+                else
+                    Log.d("RETROFIT", "no Delete");
+            }
+
+            @Override
+            public void onFailure(Call<DeleteUser> call, Throwable t) {
+                Log.d("RETROFIT", "ERROR");
+            }
+        });
+
+
+    }
 
 
     @Override
@@ -292,26 +320,7 @@ public class AdminActivity extends AppCompatActivity {
 
 
 
-//
-//        String new_id = old_id.getText().toString();
-//
-//                String new_pass = old_pass.getText().toString();
-//                String new_name = old_name.getText().toString();
-//                int access_root = 0;
-//                if(no_root_user.isChecked()){
-//                    access_root = 0;
-//                }
-//                else
-//                    access_root = 1;
-//               if(dbHelper.update(db, new_id, new_name, new_pass, access_root) == 0){
-//                   Snackbar.make(relativeLayout,"Произошла ошибка", Snackbar.LENGTH_SHORT).show();
-//               }
 
-//        ContentValues contentValues = new ContentValues();
-//        contentValues.put(DBHelper.KEY_ID, 999);
-//        contentValues.put(DBHelper.KEY_PASS, "999999");
-//        contentValues.put(DBHelper.KEY_NAME, "Igor");
-//        db.insert(TABLE_CONTACTS,null, contentValues);
     }
     //////////////////
 

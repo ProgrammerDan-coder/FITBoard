@@ -2,12 +2,14 @@ package com.example.fitboard;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -69,28 +71,35 @@ public class UserEntry extends AppCompatActivity {
 //        int[] to = new int[] {R.id.ViewNameEntry};
 
         /////Пытаюсь использовать адаптер
-        Collections.addAll(name_event);
-        adapter = new ArrayAdapter(this, R.layout.item_entry, R.id.ViewNameEntry, name_event);
-        Log.d("While", "ERROR" );
-        while (cursor.isAfterLast() == false){
-            id_event = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.KEY_EVENT_ENTRY));
-            Log.d("While", "id_event = " + id_event );
-            cursor_event = db.rawQuery("select name from " + DBHelper.TABLE_EVENT + " where _id = ?", new String[]{id_event});
-            Log.d("While", "cursor_event = " + cursor_event.getCount() );
-            ///
-            cursor_event.moveToFirst();
-            Log.d("nameEventdId", "FUCK"  );
-            nameEventId = cursor_event.getString(cursor_event.getColumnIndexOrThrow(DBHelper.KEY_NAME));
-            Log.d("nameEventdId", "FUCK2"  );
-            adapter.add(nameEventId);
-            adapter.notifyDataSetChanged();
+        try {
+            Collections.addAll(name_event);
+            adapter = new ArrayAdapter(this, R.layout.item_entry, R.id.ViewNameEntry, name_event);
+            Log.d("While", "ERROR");
+            while (cursor.isAfterLast() == false) {
+                id_event = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.KEY_EVENT_ENTRY));
+                Log.d("While", "id_event = " + id_event);
+                cursor_event = db.rawQuery("select name from " + DBHelper.TABLE_EVENT + " where _id = ?", new String[]{id_event});
+                Log.d("While", "cursor_event = " + cursor_event.getCount());
+                ///
+                cursor_event.moveToFirst();
 
-            ////////
+                nameEventId = cursor_event.getString(cursor_event.getColumnIndexOrThrow(DBHelper.KEY_NAME));
 
-            //userAdapter = new SimpleCursorAdapter(this, R.layout.item_entry ,cursor_event, header, to, 0);
+                adapter.add(nameEventId);
+                adapter.notifyDataSetChanged();
 
-            cursor.moveToNext();
+                ////////
+
+                //userAdapter = new SimpleCursorAdapter(this, R.layout.item_entry ,cursor_event, header, to, 0);
+
+                cursor.moveToNext();
+            }
         }
+        catch (SQLException ex){
+            Toast.makeText(UserEntry.this, "Произошла непредвиденная ошибка, пожалуйста перезайдите в приложение",Toast.LENGTH_SHORT).show();
+        }
+
+
 
 
         listView.setAdapter(adapter);

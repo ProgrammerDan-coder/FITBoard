@@ -185,13 +185,13 @@ public class UserActivity extends AppCompatActivity {
                 }
                 else if(access_root == 0){
                     //dbHelper.delete(db, text) == 0
-                    if(db.delete(TABLE_ENTRY, "_id_user = ? and _id_event = ?"
-                            , new String[]{String.valueOf(id_user),String.valueOf(id_event)}) == 0){
-                        Toast.makeText(UserActivity.this, "Произошла ошибка, попробуйте снова",Toast.LENGTH_SHORT).show();
+                   db.delete(TABLE_ENTRY, "_id_user = ? and _id_event = ?"
+                            , new String[]{String.valueOf(id_user),String.valueOf(id_event)});
+                        //Toast.makeText(UserActivity.this, "Произошла ошибка, попробуйте снова",Toast.LENGTH_SHORT).show();
 
 
-                    }
-                    else
+
+
                         Toast.makeText(UserActivity.this, "Вы ушли из мероприятия",Toast.LENGTH_SHORT).show();
                 }
                 else

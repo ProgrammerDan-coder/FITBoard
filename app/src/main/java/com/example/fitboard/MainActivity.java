@@ -290,8 +290,7 @@ public class MainActivity extends AppCompatActivity
                 int id_int = Integer.parseInt(id_string);
                 String name_string = name.getText().toString();
                 String pass_string = pass.getText().toString();
-                Cursor cursor = db.rawQuery("select " + KEY_ID +  " from " +
-                        TABLE_CONTACTS +" where _id = ? ", new String[]{id_string});
+                Cursor cursor = db.rawQuery("select " + KEY_ID +  " from " + TABLE_CONTACTS +" where _id = ? ", new String[]{id_string});
                 if(cursor.getCount() != 0){
                     Snackbar.make(root, "User with id" + id_int +" already exist", Snackbar.LENGTH_SHORT).show();
                     return;

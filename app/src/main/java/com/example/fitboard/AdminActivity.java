@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SearchRecentSuggestionsProvider;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -67,6 +68,7 @@ public class AdminActivity extends AppCompatActivity {
 
 
     EditText adminFilter;
+    TextView text_retrofit;
 
     Cursor cursor;
     ArrayList<String> listItem;
@@ -85,6 +87,7 @@ public class AdminActivity extends AppCompatActivity {
         listItem = new ArrayList<>();
         list = findViewById(R.id.list_acc);
         adminFilter = findViewById(R.id.adminFilter);
+        text_retrofit = findViewById(R.id.text_retrofit);
 
         //viewData();
 
@@ -354,91 +357,120 @@ public class AdminActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onResume() {
-
-        super.onResume();
-
-    }
-
 //    @Override
-//    public void onResume(){
+//    public void onResume() {
+//
 //        super.onResume();
-//        // public void viewData() {
 //
-//        // вывод всей информации о пользоваетел
-//
-//        cursor = db.rawQuery("select * from " + TABLE_CONTACTS, null);
-//
-//
-//        String [] header = new String[] {DBHelper.KEY_NAME, KEY_ID, DBHelper.KEY_PASS, DBHelper.KEY_ROOT}; //  DBHelper.KEY_TIME, DBHelper.KEY_DATE, DBHelper.KEY_DESC
-//        int[] to = new int[] {R.id.ViewNameUser, R.id.ViewId, R.id.ViewPass, R.id.ViewRoot};
-//
-//        userAdapter = new SimpleCursorAdapter(this, R.layout.item_admin ,cursor, header, to, 0);
-//
-//        list.setAdapter(userAdapter);
-//
-//        //////////////////
-//
-//        if(!adminFilter.getText().toString().isEmpty())
-//            userAdapter.getFilter().filter(adminFilter.getText().toString());
-//
-//
-//        adminFilter.addTextChangedListener(new TextWatcher() {
-//
-//            public void afterTextChanged(Editable s) { }
-//
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-//            // при изменении текста выполняем фильтрацию
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {
-//
-//                userAdapter.getFilter().filter(s.toString());
-//            }
-//        });
-//
-//        try {
-//            // устанавливаем провайдер фильтрации
-//            userAdapter.setFilterQueryProvider(new FilterQueryProvider() {
-//                @Override
-//                public Cursor runQuery(CharSequence constraint) {
-//
-//                    if (constraint == null || constraint.length() == 0) {
-//
-//                        return db.rawQuery("select * from " + TABLE_CONTACTS, null);
-//                    }
-//                    else {
-//                        return db.rawQuery("select * from " + TABLE_CONTACTS + " where " +
-//                                DBHelper.KEY_NAME + " like ? or " + KEY_ID + " like ? or " + DBHelper.KEY_ROOT +
-//                                " like ?", new String[]{"%" + constraint.toString() + "%", "%" + constraint.toString() + "%", "%" + constraint.toString() + "%"});
-//                    }
-//                }
-//            });
-//
-//            list.setAdapter(userAdapter);
-//        }
-//        catch (SQLException ex){
-//
-//        }
-//
-//        ////
-//
-//
-//
-//        // вывод только id
-//        listItem.clear();
-//        cursor = dbHelper.viewData();
-//        while (cursor.moveToNext()){
-//            listItem.add(cursor.getString(0));
-//        }
-//
-//        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, listItem);
-//        list.setAdapter(adapter);
-//
-//
-//
+//    allUsersRetrofit();
 //
 //
 //    }
+
+    public void allUsersRetrofit(){
+
+        Call<List<Post>> all = ApiClient.getIRetrofit().allUsers();
+        all.enqueue(new Callback<List<Post>>() {
+            @Override
+            public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
+                if(!response.isSuccessful()){
+                    Log.d("No good", "code: " + response.code());
+                    return;
+                }
+                List<Post> posts = response.body();
+                for(Post post: posts){
+                    String content = "";
+                    content += "Id: " + post.getId() + "\n";
+                    //content += "Name: " + post.getName() + "\n";
+                    text_retrofit.append(content);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Post>> call, Throwable t) {
+                Log.d("Error", "error_retrofit");
+            }
+        });
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        // public void viewData() {
+
+        // вывод всей информации о пользоваетел
+
+        cursor = db.rawQuery("select * from " + TABLE_CONTACTS, null);
+
+
+        String [] header = new String[] {DBHelper.KEY_NAME, KEY_ID, DBHelper.KEY_PASS, DBHelper.KEY_ROOT}; //  DBHelper.KEY_TIME, DBHelper.KEY_DATE, DBHelper.KEY_DESC
+        int[] to = new int[] {R.id.ViewNameUser, R.id.ViewId, R.id.ViewPass, R.id.ViewRoot};
+
+        userAdapter = new SimpleCursorAdapter(this, R.layout.item_admin ,cursor, header, to, 0);
+
+        list.setAdapter(userAdapter);
+
+        //////////////////
+
+        if(!adminFilter.getText().toString().isEmpty())
+            userAdapter.getFilter().filter(adminFilter.getText().toString());
+
+
+        adminFilter.addTextChangedListener(new TextWatcher() {
+
+            public void afterTextChanged(Editable s) { }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            // при изменении текста выполняем фильтрацию
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                userAdapter.getFilter().filter(s.toString());
+            }
+        });
+
+        try {
+            // устанавливаем провайдер фильтрации
+            userAdapter.setFilterQueryProvider(new FilterQueryProvider() {
+                @Override
+                public Cursor runQuery(CharSequence constraint) {
+
+                    if (constraint == null || constraint.length() == 0) {
+
+                        return db.rawQuery("select * from " + TABLE_CONTACTS, null);
+                    }
+                    else {
+                        return db.rawQuery("select * from " + TABLE_CONTACTS + " where " +
+                                DBHelper.KEY_NAME + " like ? or " + KEY_ID + " like ? or " + DBHelper.KEY_ROOT +
+                                " like ?", new String[]{"%" + constraint.toString() + "%", "%" + constraint.toString() + "%", "%" + constraint.toString() + "%"});
+                    }
+                }
+            });
+
+            list.setAdapter(userAdapter);
+        }
+        catch (SQLException ex){
+
+        }
+
+        ////
+
+
+
+        // вывод только id
+        listItem.clear();
+        cursor = dbHelper.viewData();
+        while (cursor.moveToNext()){
+            listItem.add(cursor.getString(0));
+        }
+
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, listItem);
+        list.setAdapter(adapter);
+
+
+
+
+
+    }
 //    //////////////////
 //
 

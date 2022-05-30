@@ -2,6 +2,9 @@ package com.example.fitboard;
 
 import static androidx.core.content.PackageManagerCompat.LOG_TAG;
 
+import static com.example.fitboard.DBHelper.KEY_ID;
+import static com.example.fitboard.DBHelper.TABLE_CONTACTS;
+
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -97,13 +100,28 @@ public class AdminEvent extends AppCompatActivity {
         dialog.setPositiveButton("Удалить", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                Cursor cursor_for_error = db.rawQuery("select " + KEY_ID +  " from " +
+                        TABLE_CONTACTS +" where _id = ? ", new String[]{id});
+                cursor_for_error.moveToFirst();
+                Log.d("ERROR", "cursor = " + cursor_for_error.getCount());
+                if(cursor_for_error.getCount() == 0){
+                    int delCount = db.delete(DBHelper.TABLE_EVENT, "_id = " + id, null);
+                    Log.d("LOG_TAG", "deleted rows count = " + delCount);
+                    // dialogInterface.dismiss();
+                    //db.delete(DBHelper.TABLE_EVENT, "")
+                    viewDate();
+                    cursor_for_error.close();
+                    return;
+                }
+                else
+                {
 
-                int delCount = db.delete(DBHelper.TABLE_EVENT, "_id = " + id, null);
-                Log.d("LOG_TAG", "deleted rows count = " + delCount);
-                // dialogInterface.dismiss();
-                //db.delete(DBHelper.TABLE_EVENT, "")
-                viewDate();
-                return;
+                    Toast.makeText(AdminEvent.this, "Нельзя удалить мероприятие т. к. на него записаны люди",Toast.LENGTH_SHORT).show();
+                   cursor_for_error.close();
+                    return;
+                }
+
+
             }
         });
 

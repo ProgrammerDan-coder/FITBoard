@@ -7,10 +7,12 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SearchRecentSuggestionsProvider;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -66,6 +68,7 @@ public class AdminActivity extends AppCompatActivity {
 
 
     EditText adminFilter;
+    TextView text_retrofit;
 
     Cursor cursor;
     ArrayList<String> listItem;
@@ -84,22 +87,23 @@ public class AdminActivity extends AppCompatActivity {
         listItem = new ArrayList<>();
         list = findViewById(R.id.list_acc);
         adminFilter = findViewById(R.id.adminFilter);
+        text_retrofit = findViewById(R.id.text_retrofit);
 
         //viewData();
 
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String text = list.getItemAtPosition(position).toString();
-                Toast.makeText(AdminActivity.this, "" + text,Toast.LENGTH_LONG).show();
-                showEditUsers(text); // для вызова редактирования
-
-            }
-        });
+//        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                String text = list.getItemAtPosition(position).toString();
+//                Toast.makeText(AdminActivity.this, "" + text,Toast.LENGTH_LONG).show();
+//                //showEditUsers(text); // для вызова редактирования
+//
+//            }
+//        });
 
 
     }
-
+/*
     private void showEditUsers(String text){
         ContentValues contentValues = new ContentValues(); // для добавления
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -167,8 +171,18 @@ public class AdminActivity extends AppCompatActivity {
                     Snackbar.make(relativeLayout, "Произошла ошибка, попробуйте снова", BaseTransientBottomBar.LENGTH_LONG ).show();
                 }
                 else{
-                    deleteRetrofit(Integer.parseInt(text));
-                    Snackbar.make(relativeLayout, "Пользователь удален", BaseTransientBottomBar.LENGTH_LONG ).show();
+                    Cursor cursor_for_error = db.rawQuery("select " + KEY_ID +  " from " +
+                            TABLE_CONTACTS +" where _id = ? ", new String[]{text});
+                    cursor_for_error.moveToFirst();
+                    if(cursor_for_error.getCount() == 0)
+                    {
+                        deleteRetrofit(Integer.parseInt(text));
+                        Snackbar.make(relativeLayout, "Пользователь удален", BaseTransientBottomBar.LENGTH_LONG ).show();
+                    }
+                    else
+                    {
+                        Snackbar.make(relativeLayout, "Пользователь не может быть удален", BaseTransientBottomBar.LENGTH_LONG ).show();
+                    }
                 }
 
                 viewData();
@@ -185,26 +199,52 @@ public class AdminActivity extends AppCompatActivity {
                 String new_name = old_name.getText().toString();
                 String bcryptPassword = BCrypt.withDefaults().hashToString(15, new_pass.toCharArray());
                 int access_root = 0;
+                boolean retrofit_acess;
                 if(no_root_user.isChecked()){
                     access_root = 0;
+                    retrofit_acess = false;
                 }
-                else
+                else{
                     access_root = 1;
+                    retrofit_acess = true;
+                }
+
                 if(old_pass.getText().length() < 6){
                     if(dbHelper.update(db, new_id, new_name, finalHashPass, access_root) == 0){
                         Snackbar.make(relativeLayout,"Произошла ошибка", Snackbar.LENGTH_SHORT).show();
                     }
-                    else
+                    else{
+                        Object[] obj = new Object[2];
+                        obj[0] = Integer.parseInt(text);
+                        obj[1] = retrofit_acess;
+                        Log.d("else", "before");
+                        MyThread myThread = new MyThread();
+                        myThread.execute(obj);
                         Snackbar.make(relativeLayout,"Пользователь обнавлен", Snackbar.LENGTH_SHORT).show();
+                    }
+
                     viewData();
                     return;
                 }
                else{
-                    if(dbHelper.update(db, new_id, new_name, bcryptPassword, access_root) == 0){
-                        Snackbar.make(relativeLayout,"Произошла ошибка", Snackbar.LENGTH_SHORT).show();
-                    }
-                    else
-                        Snackbar.make(relativeLayout,"Пользователь обнавлен", Snackbar.LENGTH_SHORT).show();
+//                    if(dbHelper.update(db, new_id, new_name, bcryptPassword, access_root) == 0){
+//                        Snackbar.make(relativeLayout,"Произошла ошибка", Snackbar.LENGTH_SHORT).show();
+//                    }
+//                    else{
+//
+//                       updateRetrofit(Integer.parseInt(text), retrofit_acess);
+//                        // Определяем объект Thread - новый поток
+//
+//                        Snackbar.make(relativeLayout,"Пользователь обнавлен", Snackbar.LENGTH_SHORT).show();
+//                    }
+
+
+                    Object[] obj = new Object[2];
+                    obj[0] = Integer.parseInt(text);
+                    obj[1] = retrofit_acess;
+                    Log.d("else", "before");
+                    MyThread myThread = new MyThread();
+                    myThread.execute(obj);
                     viewData();
                     return;
                 }
@@ -214,6 +254,80 @@ public class AdminActivity extends AppCompatActivity {
         });
 
         dialog.show();
+
+    }
+*/
+/////////////////class
+
+    class MyThread extends AsyncTask<Object, Void, Boolean> {
+
+
+        @Override
+        protected Boolean doInBackground(Object... obj) {
+            Update loginRequest = new Update();
+
+            int _id = (Integer)obj[0];
+            boolean access = (boolean)obj[1];
+            loginRequest.setId(_id);
+            loginRequest.setRoot(access);
+
+            Call<Update> loginResponseCall = ApiClient.getIRetrofit().update(loginRequest);
+            loginResponseCall.enqueue(new Callback<Update>() {
+                @Override
+                public void onResponse(Call<Update> call, Response<Update> response) {
+                    if(response.isSuccessful()){
+                        Log.d("RETROFIT", "Delete");
+                    }
+                    else
+                        Log.d("RETROFIT", "no Delete");
+                }
+
+                @Override
+                public void onFailure(Call<Update> call, Throwable t) {
+                    Log.d("RETROFIT", "ERROR_UPDATE");
+                }
+            });
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+        }
+
+
+        protected void onPostExecute(int _id, boolean access) {
+            //super.onPostExecute(_id, access);
+            Log.d("onPostExecute", "start");
+
+        }
+    }
+
+
+
+    public void updateRetrofit(int _id, boolean access){
+        Update loginRequest = new Update();
+
+        loginRequest.setId(_id);
+        loginRequest.setRoot(access);
+
+        Call<Update> loginResponseCall = ApiClient.getIRetrofit().update(loginRequest);
+        loginResponseCall.enqueue(new Callback<Update>() {
+            @Override
+            public void onResponse(Call<Update> call, Response<Update> response) {
+                if(response.isSuccessful()){
+                    Log.d("RETROFIT", "Delete");
+                }
+                else
+                    Log.d("RETROFIT", "no Delete");
+            }
+
+            @Override
+            public void onFailure(Call<Update> call, Throwable t) {
+                Log.d("RETROFIT", "ERROR");
+            }
+        });
 
     }
 
@@ -228,10 +342,10 @@ public class AdminActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<DeleteUser> call, Response<DeleteUser> response) {
                 if(response.isSuccessful()){
-                    Log.d("RETROFIT", "Delete");
+                    Log.d("RETROFIT", "Update");
                 }
                 else
-                    Log.d("RETROFIT", "no Delete");
+                    Log.d("RETROFIT", "no Update");
             }
 
             @Override
@@ -243,6 +357,41 @@ public class AdminActivity extends AppCompatActivity {
 
     }
 
+//    @Override
+//    public void onResume() {
+//
+//        super.onResume();
+//
+//    allUsersRetrofit();
+//
+//
+//    }
+
+    public void allUsersRetrofit(){
+
+        Call<List<Post>> all = ApiClient.getIRetrofit().allUsers();
+        all.enqueue(new Callback<List<Post>>() {
+            @Override
+            public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
+                if(!response.isSuccessful()){
+                    Log.d("No good", "code: " + response.code());
+                    return;
+                }
+                List<Post> posts = response.body();
+                for(Post post: posts){
+                    String content = "";
+                    content += "Id: " + post.getId() + "\n";
+                    //content += "Name: " + post.getName() + "\n";
+                    text_retrofit.append(content);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Post>> call, Throwable t) {
+                Log.d("Error", "error_retrofit");
+            }
+        });
+    }
 
     @Override
     public void onResume(){
@@ -322,8 +471,8 @@ public class AdminActivity extends AppCompatActivity {
 
 
     }
-    //////////////////
-
+//    //////////////////
+//
 
     private void viewData() {
         listItem.clear();

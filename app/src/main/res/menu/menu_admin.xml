@@ -10,6 +10,13 @@
         app:showAsAction="always"
         android:title="Мероприятия"
         />
+    <item
+        android:id="@+id/web_users_all"
+        app:icon="@android:drawable/ic_input_add"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        android:title="AllGet"
+        />
 
 
 

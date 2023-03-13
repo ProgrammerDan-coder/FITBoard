@@ -9,13 +9,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.FITBoard">
-        <provider
-            android:authorities="com.example.fitboard"
-            android:name="com.example.fitboard.MyContentProvider"
-
-            >
-
-        </provider>
         <activity
             android:name=".NewsActivity"
             android:exported="true" />

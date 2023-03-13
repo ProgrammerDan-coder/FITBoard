@@ -214,19 +214,19 @@ public class MainActivity extends AppCompatActivity
                 BCrypt.Result result = BCrypt.verifyer().verify(pass_string.toCharArray(), hashPass); //BCRYPT
                 Log.d("BCRYPT", "RESULT = " + result.verified);//
                 Log.d("BCRYPT", "hash = " + result.verified);//
-                loginForLogin(id_int, pass_string, name_user);
-//                if(result.verified)
-//                {
-//                    Log.d("Intent", "name_user = " + name_user);
-//                    Intent intent = new Intent(MainActivity.this, UserActivity.class);
-//                    intent.putExtra("name", name_user);
-//                    startActivity(intent);
-//                    finish();
-//                }
-//                else{
-//                    Snackbar.make(root, "Не корректные данные", Snackbar.LENGTH_SHORT).show();
-//                    return;
-//                }
+                //loginForLogin(id_int, pass_string, name_user);
+                if(result.verified)
+                {
+                    Log.d("Intent", "name_user = " + name_user);
+                    Intent intent = new Intent(MainActivity.this, UserActivity.class);
+                    intent.putExtra("name", name_user);
+                    startActivity(intent);
+                    finish();
+                }
+                else{
+                    Snackbar.make(root, "Не корректные данные", Snackbar.LENGTH_SHORT).show();
+                    return;
+                }
 
 
 
@@ -314,36 +314,10 @@ public class MainActivity extends AppCompatActivity
                 contentValues.put(DBHelper.KEY_PASS, bcryptPassword); // pass.getText().toString()
                 contentValues.put(DBHelper.KEY_NAME, name.getText().toString());
                 db.insert(TABLE_CONTACTS,null, contentValues);
-                login(id_int, pass_string, name_string);
+                //login(id_int, pass_string, name_string);
 
 
 
-
-//                contentValues.put(KEY_ID, id_int);
-//                contentValues.put(DBHelper.KEY_NAME, name.getText().toString()); //
-//                contentValues.put(DBHelper.KEY_PASS, pass.getText().toString()); //
-//                contentValues.put(DBHelper.KEY_ROOT, 0); //
-//                Uri uri = getContentResolver().insert(MyContentProvider.CONTENT_URI,contentValues);
-//                Log.d(LOG_TAG, "insert, result Uri : " + uri.toString());
-//               // db.insert(DBHelper.TABLE_CONTACTS, KEY_ID, contentValues); // добавление в БД
-//                Log.d(LOG_TAG, "insert, result Uri : " + uri.toString());
-
-
-                 //Potock
-
-//                    //retrofitClient.getServies().createUser(id_int, name.getText().toString() ,bcryptPassword).enqueue(new Callback<IRetrofit>() {
-//                        @Override
-//                        public void onResponse(Call<IRetrofit> call, Response<IRetrofit> response) {
-//                            Log.d("RETROFIT", "RETROFIT IS GOOD" );
-//                        }
-//
-//                        @Override
-//                        public void onFailure(Call<IRetrofit> call, Throwable t) {
-//                            Log.d("RETROFIT", "FAIL" );
-//                        }
-//                    });
-//                Thread thread = new MyThread();
-//                thread.start();
 
 
                 Snackbar.make(root,"Пользователь добавлен", Snackbar.LENGTH_SHORT).show();
@@ -356,61 +330,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void login(int _id, String pass, String name){
-        LoginRequest loginRequest = new LoginRequest();
-
-        loginRequest.setId(_id);
-        loginRequest.setName(name);
-        loginRequest.setPassword(pass);
-
-        Call<LoginResponse> loginResponseCall = ApiClient.getIRetrofit().userLogin(loginRequest);
-        loginResponseCall.enqueue(new Callback<LoginResponse>() {
-            @Override
-            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                if(response.isSuccessful()){
-                    Log.d("RETROFIT", "GOOD");
-                }
-                else
-                    Log.d("RETROFIT", "no good");
-            }
-
-            @Override
-            public void onFailure(Call<LoginResponse> call, Throwable t) {
-                    Log.d("RETROFIT", "ERROR");
-            }
-        });
-
-
-    }
-
-    public void loginForLogin(int _id, String pass, String name){
-        LoginResponseForLogin loginRequest = new LoginResponseForLogin();
-
-        loginRequest.setId(_id);
-        loginRequest.setPassword(pass);
-       Call<LoginResponseForLogin> loginResponseForLoginCall = ApiClient.getIRetrofit().Login(loginRequest);
-       loginResponseForLoginCall.enqueue(new Callback<LoginResponseForLogin>() {
-           @Override
-           public void onResponse(Call<LoginResponseForLogin> call, Response<LoginResponseForLogin> response) {
-               if(response.isSuccessful()){
-                   Log.d("RETROFIT", "GOOD");
-                   Log.d("Intent", "name_user = " + name);
-                   Intent intent = new Intent(MainActivity.this, UserActivity.class);
-                   intent.putExtra("name", name);
-                   startActivity(intent);
-                   finish();
-               }
-               else
-                   Log.d("RETROFIT", "no good");
-           }
-
-           @Override
-           public void onFailure(Call<LoginResponseForLogin> call, Throwable t) {
-               Log.d("RETROFIT", "ERROR");
-           }
-       });
-
-    }
 
 
 

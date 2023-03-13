@@ -89,21 +89,21 @@ public class AdminActivity extends AppCompatActivity {
         adminFilter = findViewById(R.id.adminFilter);
         text_retrofit = findViewById(R.id.text_retrofit);
 
-        //viewData();
+        viewData();
 
-//        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                String text = list.getItemAtPosition(position).toString();
-//                Toast.makeText(AdminActivity.this, "" + text,Toast.LENGTH_LONG).show();
-//                //showEditUsers(text); // для вызова редактирования
-//
-//            }
-//        });
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String text = list.getItemAtPosition(position).toString();
+                Toast.makeText(AdminActivity.this, "" + text,Toast.LENGTH_LONG).show();
+                showEditUsers(text); // для вызова редактирования
+
+            }
+        });
 
 
     }
-/*
+
     private void showEditUsers(String text){
         ContentValues contentValues = new ContentValues(); // для добавления
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -176,7 +176,7 @@ public class AdminActivity extends AppCompatActivity {
                     cursor_for_error.moveToFirst();
                     if(cursor_for_error.getCount() == 0)
                     {
-                        deleteRetrofit(Integer.parseInt(text));
+
                         Snackbar.make(relativeLayout, "Пользователь удален", BaseTransientBottomBar.LENGTH_LONG ).show();
                     }
                     else
@@ -218,8 +218,7 @@ public class AdminActivity extends AppCompatActivity {
                         obj[0] = Integer.parseInt(text);
                         obj[1] = retrofit_acess;
                         Log.d("else", "before");
-                        MyThread myThread = new MyThread();
-                        myThread.execute(obj);
+
                         Snackbar.make(relativeLayout,"Пользователь обнавлен", Snackbar.LENGTH_SHORT).show();
                     }
 
@@ -243,8 +242,7 @@ public class AdminActivity extends AppCompatActivity {
                     obj[0] = Integer.parseInt(text);
                     obj[1] = retrofit_acess;
                     Log.d("else", "before");
-                    MyThread myThread = new MyThread();
-                    myThread.execute(obj);
+
                     viewData();
                     return;
                 }
@@ -256,142 +254,10 @@ public class AdminActivity extends AppCompatActivity {
         dialog.show();
 
     }
-*/
+
 /////////////////class
 
-    class MyThread extends AsyncTask<Object, Void, Boolean> {
 
-
-        @Override
-        protected Boolean doInBackground(Object... obj) {
-            Update loginRequest = new Update();
-
-            int _id = (Integer)obj[0];
-            boolean access = (boolean)obj[1];
-            loginRequest.setId(_id);
-            loginRequest.setRoot(access);
-
-            Call<Update> loginResponseCall = ApiClient.getIRetrofit().update(loginRequest);
-            loginResponseCall.enqueue(new Callback<Update>() {
-                @Override
-                public void onResponse(Call<Update> call, Response<Update> response) {
-                    if(response.isSuccessful()){
-                        Log.d("RETROFIT", "Delete");
-                    }
-                    else
-                        Log.d("RETROFIT", "no Delete");
-                }
-
-                @Override
-                public void onFailure(Call<Update> call, Throwable t) {
-                    Log.d("RETROFIT", "ERROR_UPDATE");
-                }
-            });
-            return null;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-        }
-
-
-        protected void onPostExecute(int _id, boolean access) {
-            //super.onPostExecute(_id, access);
-            Log.d("onPostExecute", "start");
-
-        }
-    }
-
-
-
-    public void updateRetrofit(int _id, boolean access){
-        Update loginRequest = new Update();
-
-        loginRequest.setId(_id);
-        loginRequest.setRoot(access);
-
-        Call<Update> loginResponseCall = ApiClient.getIRetrofit().update(loginRequest);
-        loginResponseCall.enqueue(new Callback<Update>() {
-            @Override
-            public void onResponse(Call<Update> call, Response<Update> response) {
-                if(response.isSuccessful()){
-                    Log.d("RETROFIT", "Delete");
-                }
-                else
-                    Log.d("RETROFIT", "no Delete");
-            }
-
-            @Override
-            public void onFailure(Call<Update> call, Throwable t) {
-                Log.d("RETROFIT", "ERROR");
-            }
-        });
-
-    }
-
-    public void deleteRetrofit(int _id){
-        DeleteUser loginRequest = new DeleteUser();
-
-        loginRequest.setId(_id);
-
-
-        Call<DeleteUser> loginResponseCall = ApiClient.getIRetrofit().delete(loginRequest);
-        loginResponseCall.enqueue(new Callback<DeleteUser>() {
-            @Override
-            public void onResponse(Call<DeleteUser> call, Response<DeleteUser> response) {
-                if(response.isSuccessful()){
-                    Log.d("RETROFIT", "Update");
-                }
-                else
-                    Log.d("RETROFIT", "no Update");
-            }
-
-            @Override
-            public void onFailure(Call<DeleteUser> call, Throwable t) {
-                Log.d("RETROFIT", "ERROR");
-            }
-        });
-
-
-    }
-
-//    @Override
-//    public void onResume() {
-//
-//        super.onResume();
-//
-//    allUsersRetrofit();
-//
-//
-//    }
-
-    public void allUsersRetrofit(){
-
-        Call<List<Post>> all = ApiClient.getIRetrofit().allUsers();
-        all.enqueue(new Callback<List<Post>>() {
-            @Override
-            public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
-                if(!response.isSuccessful()){
-                    Log.d("No good", "code: " + response.code());
-                    return;
-                }
-                List<Post> posts = response.body();
-                for(Post post: posts){
-                    String content = "";
-                    content += "Id: " + post.getId() + "\n";
-                    //content += "Name: " + post.getName() + "\n";
-                    text_retrofit.append(content);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Post>> call, Throwable t) {
-                Log.d("Error", "error_retrofit");
-            }
-        });
-    }
 
     @Override
     public void onResume(){
@@ -503,6 +369,13 @@ public class AdminActivity extends AppCompatActivity {
             case android.R.id.home:
                 this.finish();
                 return true;
+
+
+
+
+
+                //startActivity(intent);
+
         }
         return super.onOptionsItemSelected(item);
     }
